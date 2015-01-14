@@ -28,6 +28,9 @@ public class CarouselView extends HorizontalScrollView {
     private static final int SIZE = 5;
     private int[] ids = {R.drawable.a, R.drawable.b, R.drawable.c, R.drawable.d, R.drawable.e};
     private int firstMarginLeft = 0;
+    /**
+     * 偏移量，表示第一个元素离开初始位置的距离
+     */
     private int offset = 0;
     private static final int ITEM_MARGIN = 40;
     private int halfPositionX;
@@ -96,7 +99,7 @@ public class CarouselView extends HorizontalScrollView {
     private void addPics() {
 
         DisplayMetrics dm = getResources().getDisplayMetrics();
-        int width = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 96, dm);
+        int width = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 70, dm);
 
         for (int i = 0; i < SIZE; i++) {
             CircleImageView imageView = new CircleImageView(getContext());
@@ -105,8 +108,24 @@ public class CarouselView extends HorizontalScrollView {
             lp.leftMargin = ITEM_MARGIN;
             imageView.setBorderWidth(2);
             imageView.setImageResource(ids[i]);
+            final int fi = i;
+            imageView.setOnClickListener(new OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    moveToCenter(fi);
+                }
+            });
             carouse_ll.addView(imageView, lp);
         }
+    }
+
+    /**
+     * 根据点击图片的位置来判断要滑动的距离，实现点击的图片滑到中心的效果
+     * @param fi
+     */
+    private void moveToCenter(int fi) {
+        offset = fi;
+        smoothScrollTo((itemWidth + ITEM_MARGIN) * (offset), 0);
     }
 
     @Override
@@ -123,11 +142,11 @@ public class CarouselView extends HorizontalScrollView {
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
         itemWidth = carouse_ll.getChildAt(0).getMeasuredWidth();
         halfItemWidth = itemWidth / 2;
         firstMarginLeft = (getMeasuredWidth() - itemWidth) / 2;
         halfPositionX = getResources().getDisplayMetrics().widthPixels / 2;
-        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
     }
 
     @Override
