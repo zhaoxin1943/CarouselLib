@@ -16,6 +16,9 @@ import android.widget.LinearLayout;
 
 import com.nineoldandroids.view.ViewHelper;
 
+import java.util.ArrayList;
+import java.util.List;
+
 
 /**
  * Created by zhaoxin on 14/12/18.
@@ -23,7 +26,12 @@ import com.nineoldandroids.view.ViewHelper;
  * https://github.com/zhaoxin1943
  */
 public class CarouselView extends HorizontalScrollView {
-
+    private static final String TAG = "CarouselView";
+    /**
+     * 默认初始位置
+     */
+    private static final int DEFAULT_SELECTED = 0;
+    private List<String> pics = new ArrayList<String>();
     private LinearLayout carouse_ll;
     private static final int SIZE = 5;
     private int[] ids = {R.drawable.a, R.drawable.b, R.drawable.c, R.drawable.d, R.drawable.e};
@@ -31,7 +39,7 @@ public class CarouselView extends HorizontalScrollView {
     /**
      * 偏移量，表示第一个元素离开初始位置的距离
      */
-    private int offset = 0;
+    private int offset = DEFAULT_SELECTED;
     private static final int ITEM_MARGIN = 40;
     private int halfPositionX;
     private static final int DURATION = 3000;
@@ -45,7 +53,7 @@ public class CarouselView extends HorizontalScrollView {
             if (what == 1) {
                 if (isAutoScroll) {
                     offset++;
-                    smoothScrollTo((itemWidth + ITEM_MARGIN) * (offset), 0);
+                    scrollImage(offset);
 
                     if (offset < SIZE) {
                         Message message = Message.obtain();
@@ -57,7 +65,7 @@ public class CarouselView extends HorizontalScrollView {
                 }
             } else if (what == 2) {
                 offset = (getScrollX()) / itemWidth;
-                smoothScrollTo((itemWidth + ITEM_MARGIN) * (offset), 0);
+                scrollImage(offset);
             }
 
         }
@@ -87,6 +95,9 @@ public class CarouselView extends HorizontalScrollView {
         Message message = Message.obtain();
         message.what = 1;
         mHandler.sendMessageDelayed(message, DURATION);
+        if(itemScrollCallBack != null){
+            itemScrollCallBack.onItemSelected(carouse_ll.getChildAt(DEFAULT_SELECTED),DEFAULT_SELECTED);
+        }
     }
 
     @Override
@@ -125,7 +136,7 @@ public class CarouselView extends HorizontalScrollView {
      */
     private void moveToCenter(int fi) {
         offset = fi;
-        smoothScrollTo((itemWidth + ITEM_MARGIN) * (offset), 0);
+        scrollImage(offset);
     }
 
     @Override
@@ -178,5 +189,57 @@ public class CarouselView extends HorizontalScrollView {
             mHandler.sendMessageDelayed(msg, 100);
         }
         return super.onTouchEvent(ev);
+    }
+
+    /**
+     * 滚动到某个位置
+     * @param offset
+     */
+    public void scrollImage(int offset) {
+        smoothScrollTo((itemWidth + ITEM_MARGIN) * (offset), 0);
+        View itemView;
+        if (offset > 0) {
+            itemView = carouse_ll.getChildAt(offset - 1);
+        }else{
+            itemView = carouse_ll.getChildAt(0);
+        }
+        Log.d(TAG, " offset : " + offset);
+        Log.d(TAG, " view : " + itemView);
+        //TODO 回调
+        if(itemScrollCallBack != null){
+            itemScrollCallBack.onItemSelected(itemView,offset);
+        }
+    }
+
+
+    public interface ItemScrollCallBack {
+        void onItemSelected(View view,int position);
+    }
+
+    public ItemScrollCallBack itemScrollCallBack;
+
+    public void setCallBack(ItemScrollCallBack callBack) {
+        this.itemScrollCallBack = callBack;
+    }
+
+    public void setSelection(int index){
+        offset = index;
+        scrollImage(offset);
+    }
+
+    public void AutoScroll(){
+        isAutoScroll = true;
+        Message message = Message.obtain();
+        message.what = 1;
+        mHandler.sendMessageDelayed(message, DURATION);
+    }
+    public void StopScroll(){
+        isAutoScroll = false;
+        Message message = Message.obtain();
+        message.what = 2;
+        mHandler.sendMessageDelayed(message, DURATION);
+    }
+    public int getCount(){
+        return pics.size();
     }
 }
