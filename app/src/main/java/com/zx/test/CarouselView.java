@@ -2,6 +2,7 @@ package com.zx.test;
 
 import android.content.Context;
 import android.graphics.Color;
+import android.graphics.Rect;
 import android.os.Handler;
 import android.os.Message;
 import android.util.AttributeSet;
@@ -33,18 +34,25 @@ public class CarouselView extends HorizontalScrollView {
     private static final int DEFAULT_SELECTED = 0;
     private List<String> pics = new ArrayList<String>();
     private LinearLayout carouse_ll;
-    private static final int SIZE = 5;
+    private int SIZE = 5;
     private int[] ids = {R.drawable.a, R.drawable.b, R.drawable.c, R.drawable.d, R.drawable.e};
+    /**
+     * 第一个元素的MarginLeft
+     */
     private int firstMarginLeft = 0;
     /**
      * 偏移量，表示第一个元素离开初始位置的距离
      */
     private int offset = DEFAULT_SELECTED;
     private static final int ITEM_MARGIN = 40;
+    /**
+     * 屏幕横向中点的x值
+     */
     private int halfPositionX;
     private static final int DURATION = 3000;
     private static final float TO_SCALE = 1.2f;
     private boolean isAutoScroll = true;
+    private int width;
 
     private Handler mHandler = new Handler() {
         @Override
@@ -95,9 +103,12 @@ public class CarouselView extends HorizontalScrollView {
         Message message = Message.obtain();
         message.what = 1;
         mHandler.sendMessageDelayed(message, DURATION);
-        if(itemScrollCallBack != null){
-            itemScrollCallBack.onItemSelected(carouse_ll.getChildAt(DEFAULT_SELECTED),DEFAULT_SELECTED);
+        if (itemScrollCallBack != null) {
+            itemScrollCallBack.onItemSelected(carouse_ll.getChildAt(DEFAULT_SELECTED), DEFAULT_SELECTED);
         }
+        DisplayMetrics dm = getResources().getDisplayMetrics();
+        width = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 70, dm);
+
     }
 
     @Override
@@ -109,29 +120,52 @@ public class CarouselView extends HorizontalScrollView {
 
     private void addPics() {
 
-        DisplayMetrics dm = getResources().getDisplayMetrics();
-        int width = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 70, dm);
 
         for (int i = 0; i < SIZE; i++) {
-            CircleImageView imageView = new CircleImageView(getContext());
-            imageView.setBorderColor(Color.parseColor("#FF000000"));
-            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(width, width);
-            lp.leftMargin = ITEM_MARGIN;
-            imageView.setBorderWidth(2);
-            imageView.setImageResource(ids[i]);
-            final int fi = i;
-            imageView.setOnClickListener(new OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    moveToCenter(fi);
-                }
-            });
-            carouse_ll.addView(imageView, lp);
+            addPic(i, ids[i], false);
         }
     }
 
+    public void addPic(int i, int resId, boolean isNeedScroll) {
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(width, width);
+        lp.leftMargin = ITEM_MARGIN;
+        CircleImageView imageView = new CircleImageView(getContext());
+        imageView.setBorderColor(Color.parseColor("#FF000000"));
+
+        imageView.setBorderWidth(2);
+        imageView.setImageResource(resId);
+        final int fi = i;
+        imageView.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                isAutoScroll = false;
+                if (fi == offset) {
+                    //todo 点击中心点的回调
+                    Log.i("zhaoxin", "center click");
+                } else {
+                    moveToCenter(fi);
+                }
+            }
+        });
+
+        if (isNeedScroll) {
+            LinearLayout.LayoutParams lp2 = (LinearLayout.LayoutParams) carouse_ll.getChildAt(carouse_ll.getChildCount() - 1).getLayoutParams();
+            lp2.rightMargin = 0;
+            lp.rightMargin = firstMarginLeft;
+        }
+        carouse_ll.addView(imageView, lp);
+
+        if (isNeedScroll) {
+            SIZE++;
+            //smoothScrollTo((itemWidth + ITEM_MARGIN) * (SIZE + 1), 0);
+            moveToCenter(SIZE);
+        }
+    }
+
+
     /**
      * 根据点击图片的位置来判断要滑动的距离，实现点击的图片滑到中心的效果
+     *
      * @param fi
      */
     private void moveToCenter(int fi) {
@@ -193,6 +227,7 @@ public class CarouselView extends HorizontalScrollView {
 
     /**
      * 滚动到某个位置
+     *
      * @param offset
      */
     public void scrollImage(int offset) {
@@ -200,20 +235,20 @@ public class CarouselView extends HorizontalScrollView {
         View itemView;
         if (offset > 0) {
             itemView = carouse_ll.getChildAt(offset - 1);
-        }else{
+        } else {
             itemView = carouse_ll.getChildAt(0);
         }
         Log.d(TAG, " offset : " + offset);
         Log.d(TAG, " view : " + itemView);
         //TODO 回调
-        if(itemScrollCallBack != null){
-            itemScrollCallBack.onItemSelected(itemView,offset);
+        if (itemScrollCallBack != null) {
+            itemScrollCallBack.onItemSelected(itemView, offset);
         }
     }
 
 
     public interface ItemScrollCallBack {
-        void onItemSelected(View view,int position);
+        void onItemSelected(View view, int position);
     }
 
     public ItemScrollCallBack itemScrollCallBack;
@@ -222,24 +257,26 @@ public class CarouselView extends HorizontalScrollView {
         this.itemScrollCallBack = callBack;
     }
 
-    public void setSelection(int index){
+    public void setSelection(int index) {
         offset = index;
         scrollImage(offset);
     }
 
-    public void AutoScroll(){
+    public void AutoScroll() {
         isAutoScroll = true;
         Message message = Message.obtain();
         message.what = 1;
         mHandler.sendMessageDelayed(message, DURATION);
     }
-    public void StopScroll(){
+
+    public void StopScroll() {
         isAutoScroll = false;
         Message message = Message.obtain();
         message.what = 2;
         mHandler.sendMessageDelayed(message, DURATION);
     }
-    public int getCount(){
+
+    public int getCount() {
         return pics.size();
     }
 }

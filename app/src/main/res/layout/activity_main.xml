@@ -6,9 +6,18 @@
 
     <com.zx.test.CarouselView
         android:id="@+id/carendarview"
+        android:layout_marginTop="50dp"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="120dp">
 
     </com.zx.test.CarouselView>
 
+    <Button
+        android:id="@+id/button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:layout_centerHorizontal="true"
+        android:layout_below="@id/carendarview"
+        android:text="添加"/>
 </RelativeLayout>
