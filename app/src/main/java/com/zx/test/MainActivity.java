@@ -7,21 +7,31 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 
+import java.util.ArrayList;
+import java.util.List;
+
 
 public class MainActivity extends ActionBarActivity {
-
+    private int[] ids = {R.drawable.a, R.drawable.b, R.drawable.c, R.drawable.d, R.drawable.e};
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        final CarouselView carouselView = (CarouselView) findViewById(R.id.carendarview);
-        Button button = (Button) findViewById(R.id.button);
-        button.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                carouselView.addPic(5, R.drawable.f, true);
-            }
-        });
+//        final CarouselView carouselView = (CarouselView) findViewById(R.id.carendarview);
+//        Button button = (Button) findViewById(R.id.button);
+//        button.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                carouselView.addPic(5, R.drawable.f, true);
+//            }
+//        });
+        List<Integer> resIds = new ArrayList<Integer>();
+        for(int i : ids){
+            resIds.add(i);
+        }
+        HorizontalListView hList = (HorizontalListView) findViewById(R.id.hList);
+        ImageAdapter adapter = new ImageAdapter(this, resIds);
+        hList.setAdapter(adapter);
 
     }
 
