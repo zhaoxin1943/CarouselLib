@@ -159,7 +159,6 @@ public class CarouselView extends HorizontalScrollView {
             //smoothScrollTo((itemWidth + ITEM_MARGIN) * (SIZE + 1), 0);
             moveToCenter(SIZE);
         }
-
     }
 
     /**
