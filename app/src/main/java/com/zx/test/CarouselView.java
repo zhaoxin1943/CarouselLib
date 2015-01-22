@@ -2,7 +2,6 @@ package com.zx.test;
 
 import android.content.Context;
 import android.graphics.Color;
-import android.graphics.Rect;
 import android.os.Handler;
 import android.os.Message;
 import android.util.AttributeSet;
@@ -32,6 +31,14 @@ public class CarouselView extends HorizontalScrollView {
      * 默认初始位置
      */
     private static final int DEFAULT_SELECTED = 0;
+    /**
+     * 偏移量，表示第一个元素离开初始位置的距离
+     */
+    private int offset = DEFAULT_SELECTED;
+    private static final int ITEM_MARGIN = 40;
+    private static final int DURATION = 3000;
+    private static final float TO_SCALE = 1.2f;
+    public ItemScrollCallBack itemScrollCallBack;
     private List<String> pics = new ArrayList<String>();
     private LinearLayout carouse_ll;
     private int SIZE = 5;
@@ -41,19 +48,12 @@ public class CarouselView extends HorizontalScrollView {
      */
     private int firstMarginLeft = 0;
     /**
-     * 偏移量，表示第一个元素离开初始位置的距离
-     */
-    private int offset = DEFAULT_SELECTED;
-    private static final int ITEM_MARGIN = 40;
-    /**
      * 屏幕横向中点的x值
      */
     private int halfPositionX;
-    private static final int DURATION = 3000;
-    private static final float TO_SCALE = 1.2f;
     private boolean isAutoScroll = true;
     private int width;
-
+    private int itemWidth, halfItemWidth;
     private Handler mHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
@@ -78,7 +78,6 @@ public class CarouselView extends HorizontalScrollView {
 
         }
     };
-    private int itemWidth, halfItemWidth;
 
     public CarouselView(Context context) {
         super(context);
@@ -160,8 +159,8 @@ public class CarouselView extends HorizontalScrollView {
             //smoothScrollTo((itemWidth + ITEM_MARGIN) * (SIZE + 1), 0);
             moveToCenter(SIZE);
         }
-    }
 
+    }
 
     /**
      * 根据点击图片的位置来判断要滑动的距离，实现点击的图片滑到中心的效果
@@ -246,13 +245,6 @@ public class CarouselView extends HorizontalScrollView {
         }
     }
 
-
-    public interface ItemScrollCallBack {
-        void onItemSelected(View view, int position);
-    }
-
-    public ItemScrollCallBack itemScrollCallBack;
-
     public void setCallBack(ItemScrollCallBack callBack) {
         this.itemScrollCallBack = callBack;
     }
@@ -278,5 +270,9 @@ public class CarouselView extends HorizontalScrollView {
 
     public int getCount() {
         return pics.size();
+    }
+
+    public interface ItemScrollCallBack {
+        void onItemSelected(View view, int position);
     }
 }
