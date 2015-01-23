@@ -6,6 +6,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,7 +36,6 @@ public class MainActivity extends ActionBarActivity {
         hList.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                hList.setSelection(position);
             }
 
             @Override
@@ -43,7 +43,24 @@ public class MainActivity extends ActionBarActivity {
 
             }
         });
-
+        hList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                hList.setSelection(position);
+            }
+        });
+        hList.setScrollCallBack(new HorizontalListView.ItemScrollCallBack() {
+            @Override
+            public void onScrollStop(int position) {
+                Toast.makeText(MainActivity.this, "position : " + position, Toast.LENGTH_LONG).show();
+            }
+        });
+        findViewById(R.id.tv_autoscroll).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                hList.AutoScroll();
+            }
+        });
     }
 
 

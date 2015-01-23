@@ -3,6 +3,8 @@ package com.zx.test;
 import android.content.Context;
 import android.database.DataSetObserver;
 import android.graphics.Rect;
+import android.os.Handler;
+import android.os.Message;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.GestureDetector;
@@ -49,6 +51,28 @@ public class HorizontalListView extends AdapterView<ListAdapter> {
     private int halfScreenWidth;
     private static final int PADDING_TOP = 30;
 
+    private boolean isAutoScroll = false;
+    private static final int DURATION = 1000;
+    private int offset = 0;
+    private Handler mHandler = new Handler() {
+        @Override
+        public void handleMessage(Message msg) {
+            int what = msg.what;
+            if (what == 1) {
+                if (isAutoScroll) {
+                    offset++;
+                    setSelection(offset);
+                    if (offset < mAdapter.getCount()) {
+                        Message message = Message.obtain();
+                        message.what = 1;
+                        mHandler.sendMessageDelayed(message, DURATION);
+                    } else {
+                        isAutoScroll = false;
+                    }
+                }
+            }
+        }
+    };
 
     public HorizontalListView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -139,7 +163,8 @@ public class HorizontalListView extends AdapterView<ListAdapter> {
         //TODO: implement
         int childWidth = getChildAt(0).getWidth();
         int positionX = position * childWidth;
-        int maxWidth = this.getChildCount() * childWidth;
+        //所有item的总长度
+        int maxWidth = mAdapter.getCount() * childWidth;
         if (positionX <= 0) {
             positionX = 0;
         }
@@ -147,6 +172,9 @@ public class HorizontalListView extends AdapterView<ListAdapter> {
             positionX = maxWidth;
         }
         scrollTo(positionX);
+        if (scrollCallBack != null) {
+            scrollCallBack.onScrollStop(position);
+        }
     }
 
     private void addAndMeasureChild(final View child, int viewPos) {
@@ -219,6 +247,7 @@ public class HorizontalListView extends AdapterView<ListAdapter> {
             });
 
         }
+        Log.d("onlayout", System.currentTimeMillis() + "");
         scaleChild();
     }
 
@@ -327,14 +356,28 @@ public class HorizontalListView extends AdapterView<ListAdapter> {
     }
 
     public synchronized void scrollTo(int x) {
-        mScroller.startScroll(mNextX, 0, x - mNextX, 0);
+        mScroller.startScroll(mNextX, 0, x - mNextX, 0, 500); //增加 duration
         requestLayout();
     }
 
     @Override
     public boolean dispatchTouchEvent(MotionEvent ev) {
         boolean handled = super.dispatchTouchEvent(ev);
-        handled |= mGesture.onTouchEvent(ev);
+        boolean gestureHandled = false;
+        int action = ev.getAction();
+        switch (action) {
+            case MotionEvent.ACTION_DOWN:
+            case MotionEvent.ACTION_MOVE:
+                gestureHandled = mGesture.onTouchEvent(ev);
+                break;
+            case MotionEvent.ACTION_UP:
+            case MotionEvent.ACTION_CANCEL:
+                gestureHandled = mGesture.onTouchEvent(ev);
+                //todo 这里判断是否还在滑动
+                Log.i("zhaoxin", "test");
+                break;
+        }
+        handled |= gestureHandled;
         return handled;
     }
 
@@ -437,6 +480,9 @@ public class HorizontalListView extends AdapterView<ListAdapter> {
         }
     };
 
+    /**
+     * item的缩放
+     */
     private void scaleChild() {
         int childCount = getChildCount();
         if (halfItemWidth < 0) {
@@ -455,5 +501,40 @@ public class HorizontalListView extends AdapterView<ListAdapter> {
 
             }
         }
+    }
+
+    public void AutoScroll() {
+        isAutoScroll = true;
+        Message message = Message.obtain();
+        message.what = 1;
+        mHandler.sendMessageDelayed(message, 0);
+    }
+
+    public void StopScroll() {
+        isAutoScroll = false;
+    }
+
+    /**
+     * 滚动结束后 滚到中间那个
+     *
+     * @param position
+     */
+    private synchronized void moveToCenter(int position) {
+        setSelection(position);
+    }
+
+    public interface ItemScrollCallBack {
+        /**
+         * 滚动后 当前显示的item的postion
+         *
+         * @param position
+         */
+        void onScrollStop(int position);
+    }
+
+    private ItemScrollCallBack scrollCallBack;
+
+    public void setScrollCallBack(ItemScrollCallBack scrollCallBack) {
+        this.scrollCallBack = scrollCallBack;
     }
 }
