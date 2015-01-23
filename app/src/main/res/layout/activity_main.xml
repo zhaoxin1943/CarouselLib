@@ -26,4 +26,16 @@
         android:layout_marginTop="20dp"
         android:layout_height="wrap_content">
         </com.zx.test.HorizontalListView>
+
+    <TextView
+        android:id="@+id/tv_autoscroll"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="点击轮播"
+        android:textSize="30sp"
+        android:textColor="@android:color/white"
+        android:background="@android:color/black"
+        android:layout_centerHorizontal="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="300dp" />
 </RelativeLayout>

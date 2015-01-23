@@ -1,18 +1,21 @@
 package com.zx.test;
 
-import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.support.v7.app.ActionBarActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
+import android.widget.AdapterView;
+import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.List;
 
 
 public class MainActivity extends ActionBarActivity {
-    private int[] ids = {R.drawable.a, R.drawable.b, R.drawable.c, R.drawable.d, R.drawable.e};
+    private TextView tv_auto;
+    private int[] ids = {R.drawable.a, R.drawable.b, R.drawable.c, R.drawable.d, R.drawable.e,R.drawable.a, R.drawable.b, R.drawable.c, R.drawable.d, R.drawable.e,R.drawable.a, R.drawable.b, R.drawable.c, R.drawable.d, R.drawable.e};
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -29,10 +32,39 @@ public class MainActivity extends ActionBarActivity {
         for(int i : ids){
             resIds.add(i);
         }
-        HorizontalListView hList = (HorizontalListView) findViewById(R.id.hList);
+        Log.d("resIds", resIds.size() + "");
+        final HorizontalListView hList = (HorizontalListView) findViewById(R.id.hList);
         ImageAdapter adapter = new ImageAdapter(this, resIds);
         hList.setAdapter(adapter);
+        tv_auto = (TextView) findViewById(R.id.tv_autoscroll);
+        hList.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+            }
 
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
+        hList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                hList.setSelection(position);
+            }
+        });
+        hList.setScrollCallBack(new HorizontalListView.ItemScrollCallBack() {
+            @Override
+            public void onScrollStop(int position) {
+                tv_auto.setText("" + position);
+            }
+        });
+        tv_auto.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                hList.AutoScroll();
+            }
+        });
     }
 
 
