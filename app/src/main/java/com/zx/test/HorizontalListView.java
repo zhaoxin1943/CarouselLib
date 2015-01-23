@@ -13,7 +13,6 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListAdapter;
-import android.widget.Scroller;
 
 import com.nineoldandroids.view.ViewHelper;
 
@@ -30,7 +29,7 @@ public class HorizontalListView extends AdapterView<ListAdapter> {
     protected int mNextX;
     private int mMaxX = Integer.MAX_VALUE;
     private int mDisplayOffset = 0;
-    protected Scroller mScroller;
+    protected MyScroller mScroller;
     private GestureDetector mGesture;
     private Queue<View> mRemovedViewQueue = new LinkedList<>();
     private OnItemSelectedListener mOnItemSelected;
@@ -67,6 +66,7 @@ public class HorizontalListView extends AdapterView<ListAdapter> {
                         message.what = 1;
                         mHandler.sendMessageDelayed(message, DURATION);
                     } else {
+                        offset = -1; //方便下次从0开始
                         isAutoScroll = false;
                     }
                 }
@@ -86,7 +86,22 @@ public class HorizontalListView extends AdapterView<ListAdapter> {
         mCurrentX = 0;
         mNextX = 0;
         mMaxX = Integer.MAX_VALUE;
-        mScroller = new Scroller(getContext());
+        mScroller = new MyScroller(getContext());
+        mScroller.setmScrollLinstener(new MyScroller.ScrollLinstener() {
+            @Override
+            public void OnFinished() {
+                int offset = (marginEdge + mScroller.getCurrX()) / itemWidth;
+
+                if (offset < 0) {
+                    offset = 0;
+                }
+                if (offset > mAdapter.getCount() - 1) {
+                    offset = mAdapter.getCount();
+                }
+                Log.d("OnFinished", "offset : " + offset);
+
+            }
+        });
         mGesture = new GestureDetector(getContext(), mOnGesture);
         halfScreenWidth = getResources().getDisplayMetrics().widthPixels >> 1;
     }
@@ -367,6 +382,7 @@ public class HorizontalListView extends AdapterView<ListAdapter> {
         int action = ev.getAction();
         switch (action) {
             case MotionEvent.ACTION_DOWN:
+                StopScroll(); //有触摸后就停止自动轮播
             case MotionEvent.ACTION_MOVE:
                 gestureHandled = mGesture.onTouchEvent(ev);
                 break;
@@ -387,7 +403,6 @@ public class HorizontalListView extends AdapterView<ListAdapter> {
             mScroller.fling(mNextX, 0, (int) -velocityX, 0, 0, mMaxX, 0, 0);
         }
         requestLayout();
-
         return true;
     }
 
