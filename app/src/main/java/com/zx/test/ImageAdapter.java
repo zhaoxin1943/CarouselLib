@@ -40,10 +40,6 @@ public class ImageAdapter extends BaseAdapter {
         return 0;
     }
 
-    class ViewHolder {
-        CircleImageView imageView;
-    }
-
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         ViewHolder holder = null;
@@ -56,7 +52,10 @@ public class ImageAdapter extends BaseAdapter {
             holder = (ViewHolder) convertView.getTag();
         }
         holder.imageView.setImageResource(items.get(position));
-        convertView.setLayoutParams(new ViewGroup.LayoutParams(100, 100));
         return convertView;
+    }
+
+    class ViewHolder {
+        CircleImageView imageView;
     }
 }
