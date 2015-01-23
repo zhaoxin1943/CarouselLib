@@ -22,19 +22,17 @@ public class MyScroller extends Scroller {
         super(context, interpolator, flywheel);
     }
 
+
     @Override
-    public boolean computeScrollOffset() {
-        boolean scrolling = super.computeScrollOffset();
-        if (!scrolling) {
-            if (mScrollLinstener != null) {
-                mScrollLinstener.OnFinished();
-            }
+    public void fling(int startX, int startY, int velocityX, int velocityY, int minX, int maxX, int minY, int maxY) {
+        super.fling(startX, startY, velocityX, velocityY, minX, maxX, minY, maxY);
+        if (mScrollLinstener != null) {
+            mScrollLinstener.OnFinished(getFinalX());
         }
-        return scrolling;
     }
 
     public interface ScrollLinstener {
-        void OnFinished();
+        void OnFinished(int finalX);
     }
 
     private ScrollLinstener mScrollLinstener;

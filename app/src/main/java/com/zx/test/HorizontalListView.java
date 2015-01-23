@@ -61,7 +61,7 @@ public class HorizontalListView extends AdapterView<ListAdapter> {
                 if (isAutoScroll) {
                     offset++;
                     setSelection(offset);
-                    if (offset < mAdapter.getCount()) {
+                    if (offset < mAdapter.getCount() - 1) {
                         Message message = Message.obtain();
                         message.what = 1;
                         mHandler.sendMessageDelayed(message, DURATION);
@@ -89,17 +89,17 @@ public class HorizontalListView extends AdapterView<ListAdapter> {
         mScroller = new MyScroller(getContext());
         mScroller.setmScrollLinstener(new MyScroller.ScrollLinstener() {
             @Override
-            public void OnFinished() {
-                int offset = (marginEdge + mScroller.getCurrX()) / itemWidth;
+            public void OnFinished(int finalX) {
+                int offset = finalX / itemWidth;
 
                 if (offset < 0) {
                     offset = 0;
                 }
                 if (offset > mAdapter.getCount() - 1) {
-                    offset = mAdapter.getCount();
+                    offset = mAdapter.getCount() - 1;
                 }
                 Log.d("OnFinished", "offset : " + offset);
-
+                setSelection(offset);
             }
         });
         mGesture = new GestureDetector(getContext(), mOnGesture);
@@ -176,6 +176,9 @@ public class HorizontalListView extends AdapterView<ListAdapter> {
     @Override
     public void setSelection(int position) {
         //TODO: implement
+        if (position > mAdapter.getCount() - 1) {
+            position = mAdapter.getCount() - 1;
+        }
         int childWidth = getChildAt(0).getWidth();
         int positionX = position * childWidth;
         //所有item的总长度
@@ -262,7 +265,6 @@ public class HorizontalListView extends AdapterView<ListAdapter> {
             });
 
         }
-        Log.d("onlayout", System.currentTimeMillis() + "");
         scaleChild();
     }
 
@@ -382,7 +384,6 @@ public class HorizontalListView extends AdapterView<ListAdapter> {
         int action = ev.getAction();
         switch (action) {
             case MotionEvent.ACTION_DOWN:
-                StopScroll(); //有触摸后就停止自动轮播
             case MotionEvent.ACTION_MOVE:
                 gestureHandled = mGesture.onTouchEvent(ev);
                 break;
@@ -401,6 +402,7 @@ public class HorizontalListView extends AdapterView<ListAdapter> {
                               float velocityY) {
         synchronized (HorizontalListView.this) {
             mScroller.fling(mNextX, 0, (int) -velocityX, 0, 0, mMaxX, 0, 0);
+            Log.d("Gesture", "onFling");
         }
         requestLayout();
         return true;
@@ -408,6 +410,9 @@ public class HorizontalListView extends AdapterView<ListAdapter> {
 
     protected boolean onDown(MotionEvent e) {
         mScroller.forceFinished(true);
+        if (isAutoScroll) {
+            StopScroll(); //有触摸后就停止自动轮播
+        }
         return true;
     }
 
@@ -429,10 +434,12 @@ public class HorizontalListView extends AdapterView<ListAdapter> {
                                 float distanceX, float distanceY) {
 
             synchronized (HorizontalListView.this) {
-                mNextX += (int) distanceX;
+                if (mNextX + distanceX <= mMaxX) { //超出后回弹
+                    mNextX += (int) distanceX;
+                }
+                //方便监听停止滚动
+                HorizontalListView.this.onFling(e1, e2, 0, 0);
             }
-            requestLayout();
-
             return true;
         }
 

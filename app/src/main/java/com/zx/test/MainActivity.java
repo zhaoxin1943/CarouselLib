@@ -2,17 +2,19 @@ package com.zx.test;
 
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.Toast;
+import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.List;
 
 
 public class MainActivity extends ActionBarActivity {
+    private TextView tv_auto;
     private int[] ids = {R.drawable.a, R.drawable.b, R.drawable.c, R.drawable.d, R.drawable.e,R.drawable.a, R.drawable.b, R.drawable.c, R.drawable.d, R.drawable.e,R.drawable.a, R.drawable.b, R.drawable.c, R.drawable.d, R.drawable.e};
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,9 +32,11 @@ public class MainActivity extends ActionBarActivity {
         for(int i : ids){
             resIds.add(i);
         }
+        Log.d("resIds", resIds.size() + "");
         final HorizontalListView hList = (HorizontalListView) findViewById(R.id.hList);
         ImageAdapter adapter = new ImageAdapter(this, resIds);
         hList.setAdapter(adapter);
+        tv_auto = (TextView) findViewById(R.id.tv_autoscroll);
         hList.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
@@ -52,10 +56,10 @@ public class MainActivity extends ActionBarActivity {
         hList.setScrollCallBack(new HorizontalListView.ItemScrollCallBack() {
             @Override
             public void onScrollStop(int position) {
-                Toast.makeText(MainActivity.this, "position : " + position, Toast.LENGTH_LONG).show();
+                tv_auto.setText("" + position);
             }
         });
-        findViewById(R.id.tv_autoscroll).setOnClickListener(new View.OnClickListener() {
+        tv_auto.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 hList.AutoScroll();
