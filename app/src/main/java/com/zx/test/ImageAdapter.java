@@ -13,16 +13,18 @@ import java.util.List;
  * QQ 230877476
  * Email nimengbo@gmail.com
  */
-public class ImageAdapter extends BaseAdapter{
+public class ImageAdapter extends BaseAdapter {
 
-    private List<Integer> items ;
+    private List<Integer> items;
     private Context context;
     private LayoutInflater layoutInflater;
-    public ImageAdapter (Context context , List<Integer> item){
+
+    public ImageAdapter(Context context, List<Integer> item) {
         items = item;
         this.context = context;
         layoutInflater = LayoutInflater.from(this.context);
     }
+
     @Override
     public int getCount() {
         return items == null ? 0 : items.size();
@@ -38,22 +40,23 @@ public class ImageAdapter extends BaseAdapter{
         return 0;
     }
 
-    class ViewHolder{
+    class ViewHolder {
         CircleImageView imageView;
     }
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         ViewHolder holder = null;
-        if(convertView == null){
+        if (convertView == null) {
             holder = new ViewHolder();
-            convertView = layoutInflater.inflate(R.layout.hlist_item,null);
+            convertView = layoutInflater.inflate(R.layout.hlist_item, null);
             holder.imageView = (CircleImageView) convertView.findViewById(R.id.cricle_image);
             convertView.setTag(holder);
-        }else{
+        } else {
             holder = (ViewHolder) convertView.getTag();
         }
         holder.imageView.setImageResource(items.get(position));
+        convertView.setLayoutParams(new ViewGroup.LayoutParams(100, 100));
         return convertView;
     }
 }

@@ -12,6 +12,8 @@ import android.widget.AdapterView;
 import android.widget.ListAdapter;
 import android.widget.Scroller;
 
+import com.nineoldandroids.view.ViewHelper;
+
 import java.util.LinkedList;
 import java.util.Queue;
 
@@ -27,11 +29,24 @@ public class HorizontalListView extends AdapterView<ListAdapter> {
     private int mDisplayOffset = 0;
     protected Scroller mScroller;
     private GestureDetector mGesture;
-    private Queue<View> mRemovedViewQueue = new LinkedList<View>();
+    private Queue<View> mRemovedViewQueue = new LinkedList<>();
     private OnItemSelectedListener mOnItemSelected;
     private OnItemClickListener mOnItemClicked;
     private OnItemLongClickListener mOnItemLongClicked;
     private boolean mDataChanged = false;
+    private int marginEdge = -1;
+    private int halfItemWidth = -1;
+    private int itemWidth = -1;
+    private static final float TO_SCALE = 1.2f;
+    /**
+     * 每个item之间的距离，相当于dividetWidth
+     */
+    private static final int CHILD_MARGIN = 40;
+    /**
+     * 屏幕宽度的一半
+     */
+    private int halfScreenWidth;
+    private static final int PADDING_TOP = 30;
 
 
     public HorizontalListView(Context context, AttributeSet attrs) {
@@ -48,6 +63,7 @@ public class HorizontalListView extends AdapterView<ListAdapter> {
         mMaxX = Integer.MAX_VALUE;
         mScroller = new Scroller(getContext());
         mGesture = new GestureDetector(getContext(), mOnGesture);
+        halfScreenWidth = getResources().getDisplayMetrics().widthPixels >> 1;
     }
 
     @Override
@@ -144,6 +160,15 @@ public class HorizontalListView extends AdapterView<ListAdapter> {
     }
 
 
+    /**
+     * 滑动过程中会一直调用
+     *
+     * @param changed
+     * @param left
+     * @param top
+     * @param right
+     * @param bottom
+     */
     @Override
     protected synchronized void onLayout(boolean changed, int left, int top, int right, int bottom) {
         super.onLayout(changed, left, top, right, bottom);
@@ -192,6 +217,7 @@ public class HorizontalListView extends AdapterView<ListAdapter> {
             });
 
         }
+        scaleChild();
     }
 
     //dx为负数时表示向右边滑动
@@ -224,7 +250,7 @@ public class HorizontalListView extends AdapterView<ListAdapter> {
             rightEdge += child.getMeasuredWidth();
 
             if (mRightViewIndex == mAdapter.getCount() - 1) {
-                mMaxX = mCurrentX + rightEdge - getWidth();
+                mMaxX = mCurrentX + rightEdge - getWidth() + marginEdge;
             }
 
             if (mMaxX < 0) {
@@ -272,6 +298,7 @@ public class HorizontalListView extends AdapterView<ListAdapter> {
 
     /**
      * 调用child的layout，布局各个子View
+     *
      * @param dx
      */
     private void positionItems(final int dx) {
@@ -281,8 +308,18 @@ public class HorizontalListView extends AdapterView<ListAdapter> {
             for (int i = 0; i < getChildCount(); i++) {
                 View child = getChildAt(i);
                 int childWidth = child.getMeasuredWidth();
-                child.layout(left, 0, left + childWidth, child.getMeasuredHeight());
-                left += childWidth + child.getPaddingRight();
+                if (i == 0) {
+                    if (marginEdge < 0) {
+                        marginEdge = halfScreenWidth - (childWidth >> 1);
+                    }
+
+                    left += marginEdge;
+                    child.layout(left, PADDING_TOP, left + childWidth, child.getMeasuredHeight() + PADDING_TOP);
+                } else {
+                    child.layout(left, PADDING_TOP, left + childWidth, child.getMeasuredHeight() + PADDING_TOP);
+                }
+
+                left += (childWidth + child.getPaddingRight() + CHILD_MARGIN);
             }
         }
     }
@@ -395,4 +432,24 @@ public class HorizontalListView extends AdapterView<ListAdapter> {
             return viewRect.contains((int) e.getRawX(), (int) e.getRawY());
         }
     };
+
+    private void scaleChild() {
+        int childCount = getChildCount();
+        if (halfItemWidth < 0) {
+            itemWidth = getChildAt(0).getWidth();
+            halfItemWidth = itemWidth >> 1;
+        }
+        for (int i = 0; i < childCount; i++) {
+            View view = getChildAt(i);
+            int[] location = new int[2];
+            view.getLocationOnScreen(location);
+            if ((halfScreenWidth - (location[0] + halfItemWidth) < itemWidth + CHILD_MARGIN)
+                    || (location[0] + halfItemWidth - halfScreenWidth < itemWidth + CHILD_MARGIN)) {
+                float scale = TO_SCALE - ((float) Math.abs(location[0] + halfItemWidth - halfScreenWidth) / (itemWidth + CHILD_MARGIN) / 10) * 2;
+                ViewHelper.setScaleX(view, scale);
+                ViewHelper.setScaleY(view, scale);
+
+            }
+        }
+    }
 }

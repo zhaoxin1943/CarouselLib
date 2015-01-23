@@ -25,7 +25,7 @@ public class MainActivity extends ActionBarActivity {
 //                carouselView.addPic(5, R.drawable.f, true);
 //            }
 //        });
-        List<Integer> resIds = new ArrayList<Integer>();
+        List<Integer> resIds = new ArrayList<>();
         for(int i : ids){
             resIds.add(i);
         }
