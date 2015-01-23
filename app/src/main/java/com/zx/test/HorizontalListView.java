@@ -414,7 +414,22 @@ public class HorizontalListView extends AdapterView<ListAdapter> {
     @Override
     public boolean dispatchTouchEvent(MotionEvent ev) {
         boolean handled = super.dispatchTouchEvent(ev);
-        handled |= mGesture.onTouchEvent(ev);
+
+        boolean gestureHandled = false;
+        int action = ev.getAction();
+        switch (action) {
+            case MotionEvent.ACTION_DOWN:
+            case MotionEvent.ACTION_MOVE:
+                gestureHandled = mGesture.onTouchEvent(ev);
+                break;
+            case MotionEvent.ACTION_UP:
+            case MotionEvent.ACTION_CANCEL:
+                gestureHandled = mGesture.onTouchEvent(ev);
+                //todo 这里判断是否还在滑动
+                Log.i("zhaoxin","test");
+                break;
+        }
+        handled |= gestureHandled;
         return handled;
     }
 
