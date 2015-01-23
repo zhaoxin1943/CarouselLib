@@ -56,7 +56,6 @@ public class ImageAdapter extends BaseAdapter {
             holder = (ViewHolder) convertView.getTag();
         }
         holder.imageView.setImageResource(items.get(position));
-        convertView.setLayoutParams(new ViewGroup.LayoutParams(100, 100));
         return convertView;
     }
 }
